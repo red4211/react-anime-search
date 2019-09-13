@@ -1,0 +1,101 @@
+.App {
+  padding-top: 20px;
+  width: 1600px;
+  margin: 0 auto;
+  display:flex;
+  justify-content: space-between;
+  align-items: start;
+}
+
+body{
+  background: lightgrey;
+}
+
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.list{
+  list-style:none;
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-gap:30px;
+  padding: 0;
+  margin: 0;
+}
+
+.main{
+  flex-basis: 1280px;
+}
+
+.list li{
+  background: #fff;
+  overflow: auto;
+}
+
+.cover-img{
+  float: left;
+  width: 184px;
+  height: 265px;
+  background-size:cover;
+  position: relative;
+  margin-right: 10px;
+}
+
+.card-container{
+  text-align:left;
+}
+
+.card-info-1{
+  display:flex;
+}
+
+.card-info-1 div{
+  flex-basis:50%;
+  background: #F6F8FB;
+  text-align: center;
+}
+
+.desc{
+  padding: 10px;
+  font-size: 14px;
+}
+
+.card-title{
+  font-weight: bold;
+  font-size: 16px;
+  margin: 0;
+  padding: 10px 0;
+}
+
+aside{
+  padding: 10px;
+  background: #fff;
+  flex-basis: 270px;
+}
+
+.btn-1{
+  display: inline-block;
+  margin: 0 15px 15px 0;
+}
