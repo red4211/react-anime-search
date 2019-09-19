@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/react-anime-search/static/css/main.4bf9ea08.chunk.css",
-    "main.js": "/react-anime-search/static/js/main.d7eeeb2f.chunk.js",
-    "main.js.map": "/react-anime-search/static/js/main.d7eeeb2f.chunk.js.map",
+    "main.css": "/react-anime-search/static/css/main.8b773a9b.chunk.css",
+    "main.js": "/react-anime-search/static/js/main.47acb5cb.chunk.js",
+    "main.js.map": "/react-anime-search/static/js/main.47acb5cb.chunk.js.map",
     "runtime~main.js": "/react-anime-search/static/js/runtime~main.439cf2f8.js",
     "runtime~main.js.map": "/react-anime-search/static/js/runtime~main.439cf2f8.js.map",
     "static/js/2.81f98875.chunk.js": "/react-anime-search/static/js/2.81f98875.chunk.js",
     "static/js/2.81f98875.chunk.js.map": "/react-anime-search/static/js/2.81f98875.chunk.js.map",
     "index.html": "/react-anime-search/index.html",
-    "precache-manifest.44aa4c060f8a03ed44db1bbdc519d517.js": "/react-anime-search/precache-manifest.44aa4c060f8a03ed44db1bbdc519d517.js",
+    "precache-manifest.66185389f2167371d681eee9002579ff.js": "/react-anime-search/precache-manifest.66185389f2167371d681eee9002579ff.js",
     "service-worker.js": "/react-anime-search/service-worker.js",
-    "static/css/main.4bf9ea08.chunk.css.map": "/react-anime-search/static/css/main.4bf9ea08.chunk.css.map"
+    "static/css/main.8b773a9b.chunk.css.map": "/react-anime-search/static/css/main.8b773a9b.chunk.css.map"
   }
 }
