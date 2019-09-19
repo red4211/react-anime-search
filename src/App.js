@@ -9,12 +9,27 @@ class App extends Component{
     this.state = {
       pageInfo:{currentPage: 1},
       mediaList: [],
-      searchString: ""
+      searchString: "",
+      mediaType: "ANIME",
+      filterBy: "POPULARITY_DESC",
+      season:""
     }
   }
 
-componentDidMount(){
-var query = `query ShowPopular{
+changeSeason = (e)=>{
+  this.setState({season:e.target.value}, ()=>{
+const searchTerm = this.state.searchString;
+const filterMethod = this.state.filterBy;
+const season = this.state.season;
+const type = this.state.mediaType;
+
+let sq = searchTerm===""? "":"$searchQuery:String,";
+let sq2 = searchTerm===""? "":"search: $searchQuery,";
+
+let seas1 = season==="" ? "" : "$season:MediaSeason,";
+let seas2 = season==="" ? "" : "season: $season,";
+
+var query = `query RunSearch(${sq+seas1} $mType: MediaType, $filterMethod:[MediaSort] ){
   Page(perPage:10, page: 1){
     pageInfo {
       total
@@ -24,12 +39,12 @@ var query = `query ShowPopular{
       perPage
     }
     
-    media(type:ANIME, season:SUMMER, seasonYear:2019, popularity_greater:6000){
+    media(${sq2+seas2} type: $mType, sort:$filterMethod){
     title{
     english
   }
     format,
-    description(asHtml:true),
+    description(asHtml:false),
     averageScore,
     studios(isMain:true) {
       nodes {
@@ -44,20 +59,97 @@ var query = `query ShowPopular{
   }
   }
   
+}`;
+
+var options = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    },
+    body: JSON.stringify({
+        query: query,
+        variables: {
+          searchQuery: searchTerm,
+          mType: type,
+          filterMethod:filterMethod,
+          season:season
+        }
+    })
+};
+
+  fetch('https://graphql.anilist.co', options)
+  .then(response => response.json())
+  .then(response => {
+    this.setState({
+      pageInfo: response.data.Page.pageInfo,
+      mediaList: response.data.Page.media 
+    })
+  })    
+  })
 }
-`;
 
-    var options = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-            query: query
-        })
-    };
+changeSortBy = (e)=>{
+  this.setState({filterBy: e.target.value}, ()=>{
+const searchTerm = this.state.searchString;
+const filterMethod = this.state.filterBy;
+const season = this.state.season;
+const type = this.state.mediaType;
 
+let sq = searchTerm===""? "":"$searchQuery:String,";
+let sq2 = searchTerm===""? "":"search: $searchQuery,";
+
+let seas1 = season==="" ? "" : "$season:MediaSeason,";
+let seas2 = season==="" ? "" : "season: $season,";
+
+var query = `query RunSearch(${sq+seas1} $mType: MediaType, $filterMethod:[MediaSort] ){
+  Page(perPage:10, page: 1){
+    pageInfo {
+      total
+      currentPage
+      lastPage
+      hasNextPage
+      perPage
+    }
+    
+    media(${sq2+seas2} type: $mType, sort:$filterMethod){
+    title{
+    english
+  }
+    format,
+    description(asHtml:false),
+    averageScore,
+    studios(isMain:true) {
+      nodes {
+        name
+      }
+    },
+    coverImage {
+      large
+      color
+    },
+    genres
+  }
+  }
+  
+}`;
+
+var options = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    },
+    body: JSON.stringify({
+        query: query,
+        variables: {
+          searchQuery: searchTerm,
+          mType: type,
+          filterMethod:filterMethod,
+          season:season
+        }
+    })
+};
 
   fetch('https://graphql.anilist.co', options)
   .then(response => response.json())
@@ -67,133 +159,25 @@ var query = `query ShowPopular{
       mediaList: response.data.Page.media 
     })
   })
-}
+  });
 
-showNext = ()=>{
-const nextPage = this.state.pageInfo.currentPage + 1;
-var query = `query ShowPopular{
-  Page(perPage:10, page: ${nextPage}){
-    pageInfo {
-      total
-      currentPage
-      lastPage
-      hasNextPage
-      perPage
-    }
-    
-    media(type:ANIME, season:SUMMER, seasonYear:2019, popularity_greater:6000){
-    title{
-    english
-  }
-    format,
-    description(asHtml:true),
-    averageScore,
-    studios(isMain:true) {
-      nodes {
-        name
-      }
-    },
-    coverImage {
-      large
-      color
-    },
-    genres
-  }
-  }
-  
-}
-`;
+}/*end changeSortBy*/
 
-    var options = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-            query: query
-        })
-    };
+setType = (event)=>{
+  const name = event.target.getAttribute('name');
+  this.setState({mediaType: name}, ()=>{
+const searchTerm = this.state.searchString;
+const filterMethod = this.state.filterBy;
+const season = this.state.season;
+const type = this.state.mediaType;
 
-  if(this.state.pageInfo.hasNextPage === true){
-  fetch('https://graphql.anilist.co', options)
-  .then(response => response.json())
-  .then(response => {
-  this.setState({
-  pageInfo: response.data.Page.pageInfo,
-  mediaList: response.data.Page.media 
-  })
-  })
-  }
-}
+let sq = searchTerm===""? "":"$searchQuery:String,";
+let sq2 = searchTerm===""? "":"search: $searchQuery,";
 
-showPrev = ()=>{
-  if(this.state.pageInfo.currentPage!==1){
-const prevPage = this.state.pageInfo.currentPage - 1;
-var query = `query ShowPopular{
-  Page(perPage:10, page: ${prevPage}){
-    pageInfo {
-      total
-      currentPage
-      lastPage
-      hasNextPage
-      perPage
-    }
-    
-    media(type:ANIME, season:SUMMER, seasonYear:2019, popularity_greater:6000){
-    title{
-    english
-  }
-    format,
-    description(asHtml:true),
-    averageScore,
-    studios(isMain:true) {
-      nodes {
-        name
-      }
-    },
-    coverImage {
-      large
-      color
-    },
-    genres
-  }
-  }
-  
-}
-`;
+let seas1 = season==="" ? "" : "$season:MediaSeason,";
+let seas2 = season==="" ? "" : "season: $season,";
 
-    var options = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-            query: query
-        })
-    };/*end*/
-
-  fetch('https://graphql.anilist.co', options)
-  .then(response => response.json())
-  .then(response => {
-  this.setState({
-  pageInfo: response.data.Page.pageInfo,
-  mediaList: response.data.Page.media 
-  })
-  })
-  }
-}
-
-setSearch = (e)=>{
-  this.setState({searchString: e.target.value})
-}
-
-runSearch = (e)=>{
-  e.preventDefault();
-const searchQuery = this.state.searchString;
-
-var query = `query Search{
+var query = `query RunSearch(${sq+seas1} $mType: MediaType, $filterMethod:[MediaSort] ){
   Page(perPage:10, page: 1){
     pageInfo {
       total
@@ -203,12 +187,12 @@ var query = `query Search{
       perPage
     }
     
-    media(type:ANIME, search: ${searchQuery} ){
+    media(${sq2+seas2} type: $mType, sort:$filterMethod){
     title{
     english
   }
     format,
-    description(asHtml:true),
+    description(asHtml:false),
     averageScore,
     studios(isMain:true) {
       nodes {
@@ -223,33 +207,340 @@ var query = `query Search{
   }
   }
   
-}
-`;
+}`;
 
-    var options = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-            query: query
-        })
-    };
+var options = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    },
+    body: JSON.stringify({
+        query: query,
+        variables: {
+          searchQuery: searchTerm,
+          mType: type,
+          filterMethod:filterMethod,
+          season:season
+        }
+    })
+};
+
+  fetch('https://graphql.anilist.co', options)
+  .then(response => response.json())
+  .then(response => {
+    this.setState({
+      pageInfo: response.data.Page.pageInfo,
+      mediaList: response.data.Page.media 
+    })
+  })
+  });
+}/* end settype*/
+
+componentDidMount(){
+const searchTerm = this.state.searchString;
+const filterMethod = this.state.filterBy;
+const season = this.state.season;
+const type = this.state.mediaType;
+
+let sq = searchTerm===""? "":"$searchQuery:String,";
+let sq2 = searchTerm===""? "":"search: $searchQuery,";
+
+let seas1 = season==="" ? "" : "$season:MediaSeason,";
+let seas2 = season==="" ? "" : "season: $season,";
+
+var query = `query RunSearch(${sq+seas1} $mType: MediaType, $filterMethod:[MediaSort] ){
+  Page(perPage:10, page: 1){
+    pageInfo {
+      total
+      currentPage
+      lastPage
+      hasNextPage
+      perPage
+    }
+    
+    media(${sq2+seas2} type: $mType, sort:$filterMethod){
+    title{
+    english
+  }
+    format,
+    description(asHtml:false),
+    averageScore,
+    studios(isMain:true) {
+      nodes {
+        name
+      }
+    },
+    coverImage {
+      large
+      color
+    },
+    genres
+  }
+  }
+  
+}`;
+
+var options = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    },
+    body: JSON.stringify({
+        query: query,
+        variables: {
+          searchQuery: searchTerm,
+          mType: type,
+          filterMethod:filterMethod,
+          season:season
+        }
+    })
+};
 
 fetch('https://graphql.anilist.co', options)
   .then(response => response.json())
   .then(response => {
-    console.log(response);
+this.setState({
+      pageInfo: response.data.Page.pageInfo,
+      mediaList: response.data.Page.media 
+    })
+  })
+}
+
+showNext = ()=>{
+  if(this.state.pageInfo.hasNextPage===true){
+const nextPage = this.state.pageInfo.currentPage + 1;
+const searchTerm = this.state.searchString;
+const filterMethod = this.state.filterBy;
+const season = this.state.season;
+const type = this.state.mediaType;
+
+let sq = searchTerm===""? "":"$searchQuery:String,";
+let sq2 = searchTerm===""? "":"search: $searchQuery,";
+
+let seas1 = season==="" ? "" : "$season:MediaSeason,";
+let seas2 = season==="" ? "" : "season: $season,";
+
+var query = `query RunSearch(${sq+seas1} $mType: MediaType, $filterMethod:[MediaSort], $nextPage:Int){
+  Page(perPage:10, page: $nextPage){
+    pageInfo {
+      total
+      currentPage
+      lastPage
+      hasNextPage
+      perPage
+    }
+    
+    media(${sq2+seas2} type: $mType, sort:$filterMethod){
+    title{
+    english
+  }
+    format,
+    description(asHtml:false),
+    averageScore,
+    studios(isMain:true) {
+      nodes {
+        name
+      }
+    },
+    coverImage {
+      large
+      color
+    },
+    genres
+  }
+  }
+  
+}`;
+
+var options = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    },
+    body: JSON.stringify({
+        query: query,
+        variables: {
+          searchQuery: searchTerm,
+          mType: type,
+          filterMethod:filterMethod,
+          season:season,
+          nextPage:nextPage
+        }
+    })
+};
+
+fetch('https://graphql.anilist.co', options)
+  .then(response => response.json())
+  .then(response => {
+this.setState({
+      pageInfo: response.data.Page.pageInfo,
+      mediaList: response.data.Page.media 
+    })
+  })
+  }
+}
+
+showPrev = ()=>{
+  if(this.state.pageInfo.currentPage!==1){
+const prevPage = this.state.pageInfo.currentPage - 1;
+const searchTerm = this.state.searchString;
+const filterMethod = this.state.filterBy;
+const season = this.state.season;
+const type = this.state.mediaType;
+
+let sq = searchTerm===""? "":"$searchQuery:String,";
+let sq2 = searchTerm===""? "":"search: $searchQuery,";
+
+let seas1 = season==="" ? "" : "$season:MediaSeason,";
+let seas2 = season==="" ? "" : "season: $season,";
+
+var query = `query RunSearch(${sq+seas1} $mType: MediaType, $filterMethod:[MediaSort], $prevPage:Int){
+  Page(perPage:10, page: $prevPage){
+    pageInfo {
+      total
+      currentPage
+      lastPage
+      hasNextPage
+      perPage
+    }
+    
+    media(${sq2+seas2} type: $mType, sort:$filterMethod){
+    title{
+    english
+  }
+    format,
+    description(asHtml:false),
+    averageScore,
+    studios(isMain:true) {
+      nodes {
+        name
+      }
+    },
+    coverImage {
+      large
+      color
+    },
+    genres
+  }
+  }
+  
+}`;
+
+var options = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    },
+    body: JSON.stringify({
+        query: query,
+        variables: {
+          searchQuery: searchTerm,
+          mType: type,
+          filterMethod:filterMethod,
+          season:season,
+          prevPage:prevPage
+        }
+    })
+};
+
+fetch('https://graphql.anilist.co', options)
+  .then(response => response.json())
+  .then(response => {
+this.setState({
+      pageInfo: response.data.Page.pageInfo,
+      mediaList: response.data.Page.media 
+    })
+  })    
+  }
+}
+
+setSearch = (e)=>{
+  this.setState({searchString: e.target.value})
+}
+
+runSearch = (e)=>{
+  e.preventDefault();
+const searchTerm = this.state.searchString;
+const filterMethod = this.state.filterBy;
+const season = this.state.season;
+const type = this.state.mediaType;
+//search query and season are optional
+let sq = searchTerm===""? "":"$searchQuery:String,";
+let sq2 = searchTerm===""? "":"search: $searchQuery,";
+
+let seas1 = season==="" ? "" : "$season:MediaSeason,";
+let seas2 = season==="" ? "" : "season: $season,";
+
+var query = `query RunSearch(${sq+seas1} $mType: MediaType, $filterMethod:[MediaSort] ){
+  Page(perPage:10, page: 1){
+    pageInfo {
+      total
+      currentPage
+      lastPage
+      hasNextPage
+      perPage
+    }
+    
+    media(${sq2+seas2} type: $mType, sort:$filterMethod){
+    title{
+    english
+  }
+    format,
+    description(asHtml:false),
+    averageScore,
+    studios(isMain:true) {
+      nodes {
+        name
+      }
+    },
+    coverImage {
+      large
+      color
+    },
+    genres
+  }
+  }
+  
+}`;
+
+var options = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    },
+    body: JSON.stringify({
+        query: query,
+        variables: {
+          searchQuery: searchTerm,
+          mType: type,
+          filterMethod:filterMethod,
+          season:season
+        }
+    })
+};
+
+fetch('https://graphql.anilist.co', options)
+  .then(response => response.json())
+  .then(response => {
+this.setState({
+      pageInfo: response.data.Page.pageInfo,
+      mediaList: response.data.Page.media 
+    })
   })
 }/*end runsearch*/
-
 
   render(){
     return (
     <div className="App">
       <aside>
         <Search setSearch={this.setSearch} searchString={this.state.searchString} runSearch={this.runSearch} />
+        <TypeFilter setType={this.setType} mediaType={this.state.mediaType}/>
+        <Filters changeSortBy={this.changeSortBy} changeSeason={this.changeSeason}/>
       </aside>
       <List mediaList={this.state.mediaList} showNext={this.showNext} showPrev={this.showPrev} />
     </div>
@@ -263,6 +554,10 @@ function List(props){
     backgroundImage:"url("+elem.coverImage.large+")",
     color: "#cdcdcd"
   }
+
+  const genres = elem.genres.map((elem,index)=>{
+    return <li key={index}>{elem}</li>
+  })
     return (<li key={index} >
       <a href="#" className="cover-img" style={completedStyle} >
       </a>
@@ -270,17 +565,20 @@ function List(props){
         <p className="card-title" >{elem.title.english}</p>
         <div className="card-info-1" >
           <div>{elem.format}</div>
-      <div>{elem.averageScore}</div>
+      <div>{elem.averageScore + '%'}</div>
         </div>
       <div className="desc">{elem.description}</div>
+      <ul className="genres-list">{genres}</ul>
       </div>
     </li>)
   })
 
   return(
     <div className="main">
-      <button onClick={props.showPrev} className="btn-1">Prev</button>
-      <button onClick={props.showNext} className="btn-1">Next</button>
+      <div className="btn-container">
+      <button onClick={props.showPrev} className="btn-1">Back</button>
+      <button onClick={props.showNext} className="btn-1">Next</button> 
+      </div>
       <ul className="list">{listPanels}</ul>
     </div>
     )
@@ -293,7 +591,7 @@ List.propTypes = {
 }
 
 function Search(props){
-  return <form onSubmit={props.runSearch} ><input type="text" placeholder="search" onChange={props.setSearch} value={props.searchString} ></input></form>
+  return <form onSubmit={props.runSearch} ><input type="text" placeholder="search" onChange={props.setSearch} value={props.searchString} className="search-field"></input></form>
 }
 
 Search.propTypes = {
@@ -302,5 +600,50 @@ Search.propTypes = {
   runSearch: PropTypes.func
 }
 
-export default App;
+function TypeFilter(props){
+  var animeActive = props.mediaType==="ANIME"?"active":"";
+  var mangaActive = props.mediaType==="MANGA"?"active":"";
+  return(
+      <div>
+        <p className="card-title">Type</p>
+      <ul className="type-filter">
+        <li name="ANIME" onClick={props.setType} className={animeActive}>Anime</li>
+        <li name="MANGA" onClick={props.setType} className={mangaActive}>Manga</li>
+      </ul>
+      </div>
+    )
+}
 
+TypeFilter.propTypes = {
+  setType: PropTypes.func
+}
+
+function Filters(props){
+  return(
+      <div>
+        <p className="card-title">Filters</p>
+      <select onChange={props.changeSortBy} >
+      <option value="POPULARITY_DESC" >Popularity</option>
+        <option value="TITLE_ENGLISH" >Title</option>
+        <option value="SCORE_DESC">Score</option>
+        <option value="SEARCH_MATCH">Search match</option>
+      </select>
+
+      <p className="card-title">Season</p>
+      <select onChange={props.changeSeason} >
+        <option value="" >All</option>
+        <option value="WINTER">Winter</option>
+        <option value="SPRING">Spring</option>
+        <option value="SUMMER">Summer</option>
+        <option value="FALL">Fall</option>
+      </select>
+      </div>
+    )
+}
+
+Filters.propTypes = {
+  changeSortBy: PropTypes.func,
+  changeSeason: PropTypes.func
+}
+
+export default App;
